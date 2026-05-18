@@ -995,14 +995,216 @@ table {
   }
 }
 
+/* ============================================================
+   LOGIN SCREEN
+   ============================================================ */
+.login-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  z-index: 9999;
+  font-family: var(--font-sans);
+}
+
+.login-screen.hidden {
+  display: none;
+}
+
+.login-container {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  width: 100%;
+  max-width: 420px;
+  padding: 48px 40px;
+  text-align: center;
+}
+
+.login-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin: 0 auto 24px;
+}
+
+.login-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.login-subtitle {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 32px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-form-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.login-form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.login-form-input {
+  padding: 12px 14px;
+  border: 1.5px solid #d8e0ea;
+  border-radius: 10px;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  color: #111827;
+  transition: all 0.2s ease;
+}
+
+.login-form-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.login-form-input::placeholder {
+  color: #9ca3af;
+}
+
+.login-submit {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: white;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all 0.3s ease;
+}
+
+.login-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+}
+
+.login-submit:active {
+  transform: translateY(0);
+}
+
+.login-error {
+  display: none;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: #dc2626;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.login-error.show {
+  display: block;
+}
+
+.login-footer {
+  margin-top: 20px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.main-app {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+}
+
+.main-app.hidden {
+  display: none;
+}
+
+.main-app body {
+  display: flex;
+}
+
 </style>
 </head>
 <body>
 
-<!-- ============================================================
-     SIDEBAR
-     ============================================================ -->
-<aside class="sidebar" id="sidebar">
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-container">
+    <div class="login-icon">🔐</div>
+    <h1 class="login-title">LOE Pro</h1>
+    <p class="login-subtitle">Resource Level of Effort Calculator</p>
+    
+    <div id="loginError" class="login-error"></div>
+    
+    <form class="login-form" onsubmit="handleLogin(event)">
+      <div class="login-form-group">
+        <label class="login-form-label" for="loginUsername">Username</label>
+        <input 
+          type="text" 
+          id="loginUsername" 
+          class="login-form-input" 
+          placeholder="Enter your username"
+          autocomplete="username"
+          required
+        >
+      </div>
+      
+      <div class="login-form-group">
+        <label class="login-form-label" for="loginPassword">Password</label>
+        <input 
+          type="password" 
+          id="loginPassword" 
+          class="login-form-input" 
+          placeholder="Enter your password"
+          autocomplete="current-password"
+          required
+        >
+      </div>
+      
+      <button type="submit" class="login-submit">Sign In</button>
+    </form>
+    
+    <div class="login-footer">
+      <p>© 2026 LOE Pro. All rights reserved.</p>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until login) -->
+<div class="main-app hidden" id="mainApp">
+
+  <!-- ============================================================
+       SIDEBAR
+       ============================================================ -->
+  <aside class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-logo">
       <div class="brand-icon">LOE</div>
@@ -1063,17 +1265,21 @@ table {
   </nav>
 
   <div class="sidebar-footer">
-    <div class="nav-item" onclick="clearAllData()" style="color:#ef4444;">
-      <span class="nav-icon">🗑️</span>
-      <span class="nav-label">Clear All Data</span>
+    <div class="nav-item btn-xs" onclick="clearAllData()" style="color:#ef4444; padding: 7px 10px; font-size: 12px;">
+      <span class="nav-icon" style="font-size: 14px;">🗑️</span>
+      <span class="nav-label">Clear</span>
+    </div>
+    <div class="nav-item btn-xs" onclick="handleLogout()" style="color:#0f766e; margin-top: 8px; padding: 7px 10px; font-size: 12px;">
+      <span class="nav-icon" style="font-size: 14px;">🚪</span>
+      <span class="nav-label">Logout</span>
     </div>
   </div>
-</aside>
+  </aside>
 
-<!-- ============================================================
-     APP SHELL
-     ============================================================ -->
-<div class="app-shell">
+  <!-- ============================================================
+       APP SHELL
+       ============================================================ -->
+  <div class="app-shell">
   <!-- TOPBAR -->
   <header class="topbar">
     <div class="topbar-left">
@@ -1546,6 +1752,95 @@ table {
      JAVASCRIPT
      ============================================================ -->
 <script>
+// ============================================================
+// AUTHENTICATION - HARDCODED CREDENTIALS
+// ============================================================
+const VALID_USERS = {
+  'admin': 'admin123',
+  'user1': 'password1',
+  'user2': 'password2',
+  'team1': 'team@2026',
+  'team2': 'teampass',
+  'manager': 'manager@LOE',
+  'john': 'john2026',
+  'sarah': 'sarah2026',
+  'mike': 'mike2026',
+  'emma': 'emma2026',
+  'david': 'david2026',
+  'alice': 'alice2026',
+  'bob': 'bob2026',
+  'carol': 'carol2026',
+  'steve': 'steve2026',
+  'diana': 'diana2026',
+  'frank': 'frank2026',
+  'grace': 'grace2026',
+  'henry': 'henry2026',
+  'irene': 'irene2026'
+};
+
+function isAuthenticated() {
+  return localStorage.getItem('loeProAuth') === 'true';
+}
+
+function setAuthenticated(username) {
+  localStorage.setItem('loeProAuth', 'true');
+  localStorage.setItem('loeProUser', username);
+}
+
+function handleLogin(event) {
+  event.preventDefault();
+  const username = $('loginUsername').value.trim();
+  const password = $('loginPassword').value.trim();
+  const errorEl = $('loginError');
+  
+  if (!username || !password) {
+    errorEl.textContent = 'Please enter both username and password.';
+    errorEl.classList.add('show');
+    return;
+  }
+  
+  if (VALID_USERS[username] !== password) {
+    errorEl.textContent = 'Invalid username or password.';
+    errorEl.classList.add('show');
+    $('loginPassword').value = '';
+    return;
+  }
+  
+  // Authentication successful
+  setAuthenticated(username);
+  showAppAfterLogin();
+}
+
+function handleLogout() {
+  if (confirm('Are you sure you want to logout? Your local data will be preserved.')) {
+    localStorage.removeItem('loeProAuth');
+    localStorage.removeItem('loeProUser');
+    showLoginScreen();
+  }
+}
+
+function showLoginScreen() {
+  $('loginScreen').classList.remove('hidden');
+  $('mainApp').classList.add('hidden');
+  $('loginUsername').value = '';
+  $('loginPassword').value = '';
+  $('loginError').classList.remove('show');
+}
+
+function showAppAfterLogin() {
+  $('loginScreen').classList.add('hidden');
+  $('mainApp').classList.remove('hidden');
+  renderAll();
+}
+
+function checkAuthOnLoad() {
+  if (isAuthenticated()) {
+    showAppAfterLogin();
+  } else {
+    showLoginScreen();
+  }
+}
+
 // ============================================================
 // STATE
 // ============================================================
@@ -2762,6 +3057,7 @@ function downloadTemplate() {
 // INIT
 // ============================================================
 function init() {
+  checkAuthOnLoad();
   applyTheme();
   loadData();
   applySettingsToUI();
