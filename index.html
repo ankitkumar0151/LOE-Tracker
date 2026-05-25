@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Netcracker LOE Pro — Level of Effort Calculator</title>
+<title>Netcracker LOE APP — Efforts Calculator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <!-- SheetJS CDN for Excel Import -->
@@ -28,9 +28,9 @@
   --bg-surface: #ffffff;
   --bg-surface-2: #f3f4f6;
   --bg-surface-3: #e5e7eb;
-  --bg-sidebar: #1f2937;
-  --bg-sidebar-hover: #374151;
-  --bg-sidebar-active: #0f766e;
+  --bg-sidebar: linear-gradient(180deg, #0f5f45 0%, #094a35 100%);
+  --bg-sidebar-hover: rgba(16, 185, 129, 0.18);
+  --bg-sidebar-active: rgba(16, 185, 129, 0.28);
 
   --border: #d1d5db;
   --border-strong: #9ca3af;
@@ -38,7 +38,7 @@
   --text-primary: #111827;
   --text-secondary: #374151;
   --text-muted: #6b7280;
-  --text-sidebar: #d1d5db;
+  --text-sidebar: rgba(255,255,255,0.9);
   --text-sidebar-active: #ffffff;
 
   --accent: #0f766e;
@@ -77,9 +77,9 @@
   --bg-surface: #161b22;
   --bg-surface-2: #1c2230;
   --bg-surface-3: #21273a;
-  --bg-sidebar: #0a0e18;
-  --bg-sidebar-hover: #141a28;
-  --bg-sidebar-active: #1e3a5f;
+  --bg-sidebar: linear-gradient(180deg, #042f21 0%, #0a412e 100%);
+  --bg-sidebar-hover: rgba(16, 185, 129, 0.18);
+  --bg-sidebar-active: rgba(16, 185, 129, 0.28);
 
   --border: #2a3042;
   --border-strong: #3d4861;
@@ -87,6 +87,7 @@
   --text-primary: #e6edf3;
   --text-secondary: #8b949e;
   --text-muted: #484f58;
+  --bg-surface-translucent: rgba(22,27,34,0.92);
 
   --shadow-xs: 0 1px 2px rgba(0,0,0,0.2);
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
@@ -120,6 +121,8 @@ body {
    ============================================================ */
 .sidebar {
   width: var(--sidebar-w);
+  min-width: 72px;
+  max-width: 320px;
   min-height: 100vh;
   background: var(--bg-sidebar);
   display: flex;
@@ -129,46 +132,220 @@ body {
   top: 0;
   bottom: 0;
   z-index: 200;
-  transition: transform var(--transition);
-  padding-bottom: 20px;
+  transition: width var(--transition), transform var(--transition), padding var(--transition);
+  overflow-x: hidden;
+  padding-bottom: 0;
+}
+
+.sidebar.collapsed {
+  width: 72px;
+}
+
+.sidebar.collapsed ~ .app-shell {
+  margin-left: 72px;
 }
 
 .sidebar-brand {
-  padding: 24px 20px 18px;
+  padding: 18px 18px 12px;
   border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-toggle {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.08);
+  color: #a7f3d0;
+  font-size: 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.sidebar-toggle:hover {
+  background: rgba(255,255,255,0.16);
+}
+
+.sidebar-toggle:focus-visible {
+  outline: 2px solid rgba(255,255,255,0.85);
+  outline-offset: 2px;
+}
+
+.sidebar-hamburger {
+  display: none;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 10px;
+  transition: background var(--transition), color var(--transition);
+}
+
+.sidebar-hamburger:hover {
+  background: rgba(255,255,255,0.12);
+}
+
+.sidebar-toggle-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  transition: transform var(--transition);
+  transform: rotate(0deg);
+  will-change: transform;
+}
+
+.sidebar-toggle.open .sidebar-toggle-icon {
+  transform: rotate(180deg);
+}
+
+.sidebar.collapsed .sidebar-toggle {
+  transform: none;
+}
+
+.theme-toggle-knob,
+.sidebar-toggle-icon {
+  will-change: transform;
+}
+
+.sidebar.collapsed .nav-item {
+  min-height: 44px;
+}
+
+.sidebar.collapsed .nav-item {
+  position: relative;
+}
+
+.sidebar.collapsed .nav-item::after {
+  pointer-events: none;
+}
+
+.sidebar.collapsed .nav-item[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 10px);
+  transform: translateY(-50%);
+  white-space: nowrap;
+  background: rgba(255,255,255,0.96);
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(15,23,42,0.18);
+  z-index: 12;
+}
+
+.sidebar.collapsed .nav-item[data-tooltip]:hover::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-right-color: rgba(255,255,255,0.96);
+  z-index: 12;
+}
+
+.sidebar.collapsed .brand-text,
+.sidebar.collapsed .nav-section-label,
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .nav-badge {
+  display: none;
+}
+
+.sidebar.collapsed .brand-logo {
+  justify-content: center;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.sidebar.collapsed .nav-item .nav-icon {
+  width: auto;
+}
+
+.sidebar.collapsed .sidebar-footer {
+  padding: 8px 0;
+}
+
+.sidebar.collapsed .footer-actions {
+  justify-content: center;
+}
+
+.sidebar.collapsed .footer-btn {
+  min-width: 40px;
+  padding: 8px;
+}
+
+.sidebar.collapsed .footer-btn span {
+  display: none;
+}
+
+.sidebar-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 250;
+  opacity: 0;
+  transition: opacity var(--transition);
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.12));
+}
+
+.sidebar:hover .sidebar-resizer {
+  opacity: 1;
+}
+
+.sidebar.collapsed .sidebar-resizer {
+  display: none;
 }
 
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .brand-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius);
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 12px;
   color: white;
   letter-spacing: -0.5px;
+  box-shadow: 0 10px 20px rgba(16,185,129,0.16);
   flex-shrink: 0;
 }
 
 .brand-text { flex: 1; min-width: 0; }
 .brand-text .name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  color: #e6edf3;
+  color: #ffffff;
   letter-spacing: -0.3px;
 }
 .brand-text .sub {
-  font-size: 11px;
-  color: #4b5a72;
+  font-size: 10px;
+  color: rgba(255,255,255,0.72);
   font-weight: 400;
 }
 
@@ -176,15 +353,25 @@ body {
   flex: 1;
   padding: 12px 10px;
   overflow-y: auto;
+  overflow-x: hidden;
+  min-width: 0;
+  scrollbar-gutter: stable;
 }
 
 .nav-section-label {
   font-size: 10px;
   font-weight: 600;
-  color: #3d4d66;
+  color: rgba(255,255,255,0.75);
   text-transform: uppercase;
   letter-spacing: 1px;
   padding: 12px 10px 6px;
+  margin-top: 18px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.nav-section-label:first-of-type {
+  margin-top: 0;
+  border-top: none;
 }
 
 .nav-item {
@@ -200,26 +387,39 @@ body {
   transition: all var(--transition);
   user-select: none;
   margin-bottom: 2px;
+  min-width: 0;
+  width: 100%;
 }
 
-.nav-item:hover { background: var(--bg-sidebar-hover); color: #cbd5e1; }
-.nav-item.active { background: var(--bg-sidebar-active); color: var(--text-sidebar-active); }
+.nav-item:hover { background: var(--bg-sidebar-hover); color: #ffffff; }
+.nav-item.active { background: var(--bg-sidebar-active); color: var(--text-sidebar-active); box-shadow: inset 4px 0 0 var(--accent); }
 
-.nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
-.nav-item .nav-label { flex: 1; }
+.nav-item:focus-visible {
+  outline: 2px solid rgba(255,255,255,0.8);
+  outline-offset: 2px;
+}
+
+.nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; color: #a7f3d0; }
+.nav-item .nav-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .nav-item .nav-badge {
-  background: rgba(37,99,235,0.25);
-  color: #60a5fa;
-  padding: 1px 7px;
+  background: rgba(16,185,129,0.18);
+  color: #a7f3d0;
+  padding: 1px 6px;
   border-radius: 10px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   font-family: var(--font-mono);
 }
 .nav-item.active .nav-badge { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
 
 .sidebar-footer {
-  padding: 12px 12px 14px;
+  padding: 8px 12px 8px;
   border-top: 1px solid rgba(255,255,255,0.07);
   flex-shrink: 0;
 }
@@ -237,14 +437,14 @@ body {
 }
 
 .user-avatar {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  background: linear-gradient(135deg, #16a34a, #22c55e);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: white;
   flex-shrink: 0;
@@ -255,20 +455,20 @@ body {
 .user-name {
   font-size: 12.5px;
   font-weight: 600;
-  color: #cbd5e1;
+  color: rgba(255,255,255,0.95);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .user-role {
   font-size: 10.5px;
-  color: #3d4d66;
+  color: rgba(255,255,255,0.72);
   margin-top: 1px;
 }
 
 .footer-actions {
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 
 .footer-btn {
@@ -276,11 +476,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 10px;
+  gap: 4px;
+  padding: 6px 10px;
+  min-height: 30px;
+  line-height: 1.2;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   font-family: var(--font-sans);
   border: none;
@@ -290,24 +492,24 @@ body {
 }
 
 .footer-btn-logout {
-  background: rgba(37,99,235,0.12);
-  color: #60a5fa;
-  border: 1px solid rgba(37,99,235,0.2);
+  background: rgba(16,185,129,0.16);
+  color: #10b981;
+  border: 1px solid rgba(16,185,129,0.24);
 }
 .footer-btn-logout:hover {
-  background: rgba(37,99,235,0.22);
-  color: #93c5fd;
+  background: rgba(16,185,129,0.24);
+  color: #f0fdf4;
   transform: translateY(-1px);
 }
 
 .footer-btn-clear {
-  background: rgba(220,38,38,0.1);
-  color: #f87171;
-  border: 1px solid rgba(220,38,38,0.18);
+  background: rgba(5,150,105,0.12);
+  color: #22c55e;
+  border: 1px solid rgba(5,150,105,0.18);
 }
 .footer-btn-clear:hover {
-  background: rgba(220,38,38,0.2);
-  color: #fca5a5;
+  background: rgba(5,150,105,0.22);
+  color: #ecfccb;
   transform: translateY(-1px);
 }
 
@@ -323,12 +525,12 @@ body {
 .app-shell {
   margin-left: var(--sidebar-w);
   flex: 1;
+  width: auto;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   min-width: 0;
   overflow: hidden;
-  max-width: calc(100vw - var(--sidebar-w));
 }
 
 /* ============================================================
@@ -336,7 +538,7 @@ body {
    ============================================================ */
 .topbar {
   height: var(--header-h);
-  background: var(--bg-surface);
+  background: var(--bg-surface-translucent, rgba(249,250,251,0.92));
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -349,6 +551,7 @@ body {
   gap: 12px;
   min-width: 0;
   overflow: hidden;
+  backdrop-filter: blur(14px);
 }
 
 .topbar-left {
@@ -364,6 +567,10 @@ body {
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.3px;
+}
+
+.topbar.shadowed {
+  box-shadow: 0 12px 30px rgba(15,23,42,0.12);
 }
 
 .page-breadcrumb {
@@ -444,6 +651,7 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
   margin-bottom: 24px;
+  align-items: stretch;
 }
 
 .kpi-card {
@@ -456,6 +664,9 @@ body {
   cursor: default;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 .kpi-card::before {
   content: '';
@@ -489,7 +700,7 @@ body {
 .kpi-trend.warn { background: var(--warning-light); color: var(--warning); }
 .kpi-trend.down { background: var(--danger-light); color: var(--danger); }
 
-.kpi-value { font-size: 22px; font-weight: 700; line-height: 1; letter-spacing: -1px; color: var(--text-primary); }
+.kpi-value { font-size: 22px; font-weight: 700; line-height: 1; letter-spacing: -1px; color: var(--text-primary); font-variant-numeric: tabular-nums; }
 .kpi-label { font-size: 12px; font-weight: 500; color: var(--text-muted); margin-top: 5px; }
 .kpi-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
@@ -1070,13 +1281,30 @@ body {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 768px) {
-  .sidebar { transform: translateX(-100%); }
+  .sidebar { transform: translateX(-100%); position: fixed; left: 0; top: 0; bottom: 0; z-index: 300; width: var(--sidebar-w); }
   .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay { display: block; opacity: 0; pointer-events: none; }
+  .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
   .app-shell { margin-left: 0; }
+  .sidebar-hamburger { display: inline-flex; }
+  .topbar-actions { gap: 10px; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .charts-grid { grid-template-columns: 1fr; }
   .chart-wrap { min-height: 220px; }
   .form-row { grid-template-columns: 1fr; }
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.35);
+  transition: opacity var(--transition);
+  z-index: 250;
+}
+
+body.sidebar-open {
+  overflow: hidden;
 }
 
 /* ============================================================
@@ -1401,7 +1629,7 @@ table {
 <div id="loginScreen" class="login-screen">
   <div class="login-container">
     <div class="login-icon">🔐</div>
-    <h1 class="login-title">LOE Pro</h1>
+    <h1 class="login-title">Netcracker LOE APP</h1>
     <p class="login-subtitle">Resource Level of Effort Calculator</p>
     
     <div id="loginError" class="login-error"></div>
@@ -1435,7 +1663,7 @@ table {
     </form>
     
     <div class="login-footer">
-      <p>© 2026 LOE Pro. All rights reserved.</p>
+      <p>© 2026 Netcracker LOE APP. All rights reserved.</p>
     </div>
   </div>
 </div>
@@ -1451,13 +1679,19 @@ table {
     <div class="brand-logo">
       <div class="brand-icon">LOE</div>
       <div class="brand-text">
-        <div class="name">LOE Pro</div>
-        <div class="sub">Resource Estimator</div>
+        <div class="name">Netcracker LOE APP</div>
+        <div class="sub">Efforts Calculator</div>
       </div>
     </div>
+    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Collapse sidebar" aria-label="Collapse sidebar">
+      <svg class="sidebar-toggle-icon" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="9 6 15 12 9 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
   </div>
+  <div class="sidebar-resizer" id="sidebarResizer" onmousedown="beginSidebarResize(event)"></div>
 
-  <nav class="sidebar-nav">
+  <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
     <div class="nav-section-label">Reports</div>
     <div class="nav-item" data-view="reports" onclick="switchView('reports', this)">
       <span class="nav-icon">📈</span>
@@ -1523,15 +1757,16 @@ table {
     <div class="footer-actions" style="margin-top: 0;">
       <button class="footer-btn footer-btn-logout" onclick="handleLogout()" title="Logout">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Sign Out
+        <span>Sign Out</span>
       </button>
       <button class="footer-btn footer-btn-clear" onclick="clearAllData()" title="Clear all data">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-        Clear
+        <span>Clear</span>
       </button>
     </div>
   </div>
   </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
 
   <!-- ============================================================
        APP SHELL
@@ -1540,6 +1775,7 @@ table {
   <!-- TOPBAR -->
   <header class="topbar">
     <div class="topbar-left">
+      <button class="sidebar-hamburger" id="sidebarHamburger" onclick="toggleSidebar()" aria-label="Open navigation menu" aria-expanded="false">☰</button>
       <span class="page-title" id="page-title">Dashboard</span>
     </div>
     <div class="topbar-actions" style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: nowrap;">
@@ -2273,7 +2509,126 @@ function showAppAfterLogin() {
   const nameEl = $('topbar-user-name');
   if (avatarEl) avatarEl.textContent = uname.slice(0,2).toUpperCase();
   if (nameEl) nameEl.textContent = uname.charAt(0).toUpperCase() + uname.slice(1);
+  restoreSidebarState();
+  initializeSidebarTooltips();
+  setupTopbarScrollListener();
   renderAll();
+}
+
+function toggleSidebar() {
+  const sidebar = $('sidebar');
+  const overlay = $('sidebarOverlay');
+  if (!sidebar) return;
+  if (window.innerWidth <= 768) {
+    const open = sidebar.classList.toggle('open');
+    overlay && overlay.classList.toggle('open', open);
+    document.body.classList.toggle('sidebar-open', open);
+    if (open) sidebar.classList.remove('collapsed');
+  } else {
+    const overlay = $('sidebarOverlay');
+    overlay && overlay.classList.remove('open');
+    document.body.classList.remove('sidebar-open');
+    const collapsed = sidebar.classList.toggle('collapsed');
+    if (collapsed) {
+      document.documentElement.style.setProperty('--sidebar-w', '72px');
+      localStorage.setItem('loeSidebarCollapsed', 'true');
+    } else {
+      const stored = localStorage.getItem('loeSidebarWidth') || '220px';
+      document.documentElement.style.setProperty('--sidebar-w', stored);
+      localStorage.setItem('loeSidebarCollapsed', 'false');
+    }
+  }
+  updateSidebarToggleIcon();
+}
+
+function updateSidebarToggleIcon() {
+  const sidebar = $('sidebar');
+  const toggle = $('sidebarToggle');
+  if (!sidebar || !toggle) return;
+  const isOpen = sidebar.classList.contains('open');
+  const collapsed = sidebar.classList.contains('collapsed');
+  const isMobile = window.innerWidth <= 768;
+  const expanded = isOpen || (!collapsed && !isMobile);
+  toggle.classList.toggle('open', expanded);
+  toggle.title = isOpen ? 'Close navigation menu' : (collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+  toggle.setAttribute('aria-label', isOpen ? 'Close navigation menu' : (collapsed ? 'Expand sidebar' : 'Collapse sidebar'));
+  toggle.setAttribute('aria-expanded', expanded.toString());
+}
+
+function initializeSidebarTooltips() {
+  document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+    const label = item.querySelector('.nav-label');
+    if (label) {
+      const text = label.textContent.trim();
+      item.setAttribute('data-tooltip', text);
+      item.setAttribute('aria-label', text);
+      item.removeAttribute('title');
+    }
+    if (item.classList.contains('active')) {
+      item.setAttribute('aria-current', 'page');
+    }
+  });
+}
+
+function closeMobileSidebar() {
+  const sidebar = $('sidebar');
+  const overlay = $('sidebarOverlay');
+  if (!sidebar) return;
+  sidebar.classList.remove('open');
+  overlay && overlay.classList.remove('open');
+  document.body.classList.remove('sidebar-open');
+  updateSidebarToggleIcon();
+}
+
+function setupTopbarScrollListener() {
+  const main = $('main-content');
+  const topbar = document.querySelector('.topbar');
+  if (!main || !topbar) return;
+  const updateShadow = () => topbar.classList.toggle('shadowed', main.scrollTop > 8);
+  main.addEventListener('scroll', updateShadow);
+  updateShadow();
+}
+
+function beginSidebarResize(event) {
+  const sidebar = $('sidebar');
+  if (!sidebar) return;
+  sidebar.classList.remove('collapsed');
+  updateSidebarToggleIcon();
+  const startWidth = parseInt(getComputedStyle(sidebar).width, 10);
+  const startX = event.clientX;
+  function onMove(e) {
+    const nextWidth = Math.max(72, Math.min(320, startWidth + e.clientX - startX));
+    document.documentElement.style.setProperty('--sidebar-w', `${nextWidth}px`);
+  }
+  function onUp() {
+    const widthValue = getComputedStyle(sidebar).width;
+    localStorage.setItem('loeSidebarWidth', widthValue);
+    localStorage.setItem('loeSidebarCollapsed', 'false');
+    updateSidebarToggleIcon();
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+function restoreSidebarState() {
+  const sidebar = $('sidebar');
+  if (!sidebar) return;
+  const width = localStorage.getItem('loeSidebarWidth') || '220px';
+  document.documentElement.style.setProperty('--sidebar-w', width);
+  const collapsed = localStorage.getItem('loeSidebarCollapsed') === 'true';
+  const overlay = $('sidebarOverlay');
+  if (collapsed) {
+    sidebar.classList.add('collapsed');
+    document.documentElement.style.setProperty('--sidebar-w', '72px');
+  } else {
+    sidebar.classList.remove('collapsed');
+  }
+  sidebar.classList.remove('open');
+  overlay && overlay.classList.remove('open');
+  document.body.classList.remove('sidebar-open');
+  updateSidebarToggleIcon();
 }
 
 function checkAuthOnLoad() {
@@ -2303,8 +2658,7 @@ let state = {
   },
   expandedCapabilities: new Set(),
   expandedFeatures: new Set(),
-  expandedProjects: new Set(),
-  expandedEmployees: new Set()
+  expandedProjects: new Set()
 };
 
 let charts = {};
@@ -2325,6 +2679,14 @@ function getSettings() {
 
 function hpd() { return parseFloat($('setting-hours-per-day')?.value || getSettings().hoursPerDay || 8); }
 
+function setToArray(value) {
+  return Array.from(value || []);
+}
+
+function arrayToSet(value) {
+  return new Set(Array.isArray(value) ? value : []);
+}
+
 // ============================================================
 // STORAGE
 // ============================================================
@@ -2332,10 +2694,9 @@ function saveData() {
   try {
     const persistState = {
       ...state,
-      expandedCapabilities: Array.from(state.expandedCapabilities || []),
-      expandedFeatures: Array.from(state.expandedFeatures || []),
-      expandedProjects: Array.from(state.expandedProjects || []),
-      expandedEmployees: Array.from(state.expandedEmployees || [])
+      expandedCapabilities: setToArray(state.expandedCapabilities),
+      expandedFeatures: setToArray(state.expandedFeatures),
+      expandedProjects: setToArray(state.expandedProjects)
     };
     localStorage.setItem('loeProData', JSON.stringify(persistState));
     showToast('Saved successfully', 'success');
@@ -2350,10 +2711,9 @@ function loadData() {
       state = {
         ...state,
         ...parsed,
-        expandedCapabilities: new Set(Array.isArray(parsed.expandedCapabilities) ? parsed.expandedCapabilities : []),
-        expandedFeatures: new Set(Array.isArray(parsed.expandedFeatures) ? parsed.expandedFeatures : []),
-        expandedProjects: new Set(Array.isArray(parsed.expandedProjects) ? parsed.expandedProjects : []),
-        expandedEmployees: new Set(Array.isArray(parsed.expandedEmployees) ? parsed.expandedEmployees : [])
+        expandedCapabilities: arrayToSet(parsed.expandedCapabilities),
+        expandedFeatures: arrayToSet(parsed.expandedFeatures),
+        expandedProjects: arrayToSet(parsed.expandedProjects)
       };
     }
     if (!state.settings) state.settings = { hoursPerDay: 8, contingency: 10 };
@@ -2371,7 +2731,7 @@ function saveSettings() {
 
 function clearAllData() {
   if (!confirm('⚠️ This will permanently delete ALL data. Are you sure?')) return;
-  state = { capabilities: [], features: [], projects: [], employees: [], resourcePool: state.resourcePool || [], nextCapId: 1, nextFeatId: 1, nextProjId: 1, nextEmpId: 1, settings: state.settings, expandedCapabilities: new Set(), expandedFeatures: new Set(), expandedProjects: new Set(), expandedEmployees: new Set() };
+  state = { capabilities: [], features: [], projects: [], employees: [], resourcePool: state.resourcePool || [], nextCapId: 1, nextFeatId: 1, nextProjId: 1, nextEmpId: 1, settings: state.settings, expandedCapabilities: new Set(), expandedFeatures: new Set(), expandedProjects: new Set() };
   localStorage.removeItem('loeProData');
   renderAll();
   showToast('All data cleared', 'info');
@@ -2404,24 +2764,21 @@ function toggleProjectExpansion(projId) {
   renderProjects();
 }
 
-function toggleEmployeeExpansion(empId) {
-  if (state.expandedEmployees.has(empId)) {
-    state.expandedEmployees.delete(empId);
-  } else {
-    state.expandedEmployees.add(empId);
-  }
-  renderEmployees();
-}
-
 // ============================================================
 // NAVIGATION
 // ============================================================
 function switchView(viewName, el) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-item[data-view]').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-item[data-view]').forEach(n => {
+    n.classList.remove('active');
+    n.removeAttribute('aria-current');
+  });
   const viewEl = $('view-' + viewName);
   if (viewEl) viewEl.classList.add('active');
-  if (el) el.classList.add('active');
+  if (el) {
+    el.classList.add('active');
+    el.setAttribute('aria-current', 'page');
+  }
   const titles = {
     dashboard: 'Dashboard',
     capabilities: 'Capabilities',
@@ -2489,6 +2846,19 @@ function getOverloadedItems() {
   return warnings;
 }
 
+function getUniqueEmployeeTotals() {
+  const aggregated = {};
+  (state.employees || []).forEach(emp => {
+    const key = (emp.name || '').trim();
+    if (!key) return;
+    if (!aggregated[key]) {
+      aggregated[key] = { name: key, manDays: 0, role: emp.role || '', experience: emp.experience || 'Mid', availability: emp.availability || 100 };
+    }
+    aggregated[key].manDays += Number(emp.manDays || 0);
+  });
+  return Object.values(aggregated);
+}
+
 // ============================================================
 // RENDER: DASHBOARD
 // ============================================================
@@ -2500,6 +2870,7 @@ function renderDashboard() {
   const remainDays = totalDays - allocDays;
   const overloaded = getOverloadedItems();
   const utilPct = totalDays > 0 ? (allocDays / totalDays * 100).toFixed(0) : 0;
+  const uniqueEmployees = getUniqueEmployeeTotals();
 
   if (!state.features) state.features = [];
   // KPI Cards — simplified for QA Manager
@@ -2508,7 +2879,7 @@ function renderDashboard() {
     { icon: '⚡', iconBg: '#fef3c7', iconColor: '#d97706', label: 'Capabilities', value: state.capabilities.length, sub: `${state.features.length} features`, trend: null },
     { icon: '🧩', iconBg: '#f0fdf4', iconColor: '#16a34a', label: 'Features', value: state.features.length, sub: `${state.projects.length} projects`, trend: null },
     { icon: '📁', iconBg: 'var(--accent-2-light)', iconColor: 'var(--accent-2)', label: 'Projects', value: state.projects.length, sub: `${fmt(allocDays)} md allocated`, trend: remainDays < 0 ? { cls: 'down', txt: '⚠ Over' } : null },
-    { icon: '👥', iconBg: 'var(--info-light)', iconColor: 'var(--info)', label: 'Team Members', value: state.employees.length, sub: `Across ${state.projects.length} projects`, trend: overloaded.length > 0 ? { cls: 'warn', txt: overloaded.length + ' overload' } : null }
+    { icon: '👥', iconBg: 'var(--info-light)', iconColor: 'var(--info)', label: 'Team Members', value: uniqueEmployees.length, sub: `Across ${state.projects.length} projects`, trend: overloaded.length > 0 ? { cls: 'warn', txt: overloaded.length + ' overload' } : null }
   ];
 
   $('kpi-grid').innerHTML = kpiData.map(k => `
@@ -2546,22 +2917,7 @@ function destroyChart(key) {
   if (charts[key]) { charts[key].destroy(); delete charts[key]; }
 }
 
-function getChartColors(n) {
-  const palette = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#db2777','#65a30d','#9333ea','#0d9488'];
-  return Array.from({ length: n }, (_, i) => palette[i % palette.length]);
-}
-
 function isDark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
-
-function chartDefaults() {
-  return {
-    plugins: { legend: { labels: { color: isDark() ? '#8b949e' : '#6b7280', font: { family: 'DM Sans', size: 12 }, boxWidth: 12, padding: 16 } } },
-    scales: {
-      x: { ticks: { color: isDark() ? '#8b949e' : '#6b7280', font: { family: 'DM Sans', size: 11 } }, grid: { color: isDark() ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' } },
-      y: { ticks: { color: isDark() ? '#8b949e' : '#6b7280', font: { family: 'DM Sans', size: 11 } }, grid: { color: isDark() ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' } }
-    }
-  };
-}
 
 function renderCharts() {
   const caps = state.capabilities;
@@ -2664,10 +3020,11 @@ function renderCharts() {
     });
   }
 
-  // ── 3. Employee Allocation — Horizontal bar, all members ──
+  // ── 3. Employee Allocation — Horizontal bar, unique employees ──
   destroyChart('emp');
-  if (emps.length > 0) {
-    const sortedEmps = [...emps].sort((a, b) => (b.manDays || 0) - (a.manDays || 0));
+  const aggregatedEmps = getUniqueEmployeeTotals();
+  if (aggregatedEmps.length > 0) {
+    const sortedEmps = [...aggregatedEmps].sort((a, b) => (b.manDays || 0) - (a.manDays || 0));
     const ctx3 = $('chart-employees').getContext('2d');
     const badge = $('emp-chart-badge');
     if (badge) badge.textContent = sortedEmps.length + ' Members';
@@ -2953,12 +3310,48 @@ function renderEmployees() {
 
   const expBadge = { Junior: 'badge-gray', Mid: 'badge-blue', Senior: 'badge-purple', Lead: 'badge-yellow' };
 
+  const uniqueEmployees = getUniqueEmployeeTotals();
+  const totalAllocations = state.employees.length;
+  const totalManDays = state.employees.reduce((sum, e) => sum + (Number(e.manDays) || 0), 0);
+  const activeProjects = new Set(state.employees.filter(e => e.projectId).map(e => e.projectId)).size;
+
+  const summaryPanel = `
+    <div class="section-card" style="margin-bottom:18px;">
+      <div class="section-content" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;padding:18px;">
+        <div style="background:var(--bg-surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:8px;">Unique Team Members</div>
+          <div style="font-size:22px;font-weight:700;color:var(--accent);">${uniqueEmployees.length}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">Distinct people across all allocations</div>
+        </div>
+        <div style="background:var(--bg-surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:8px;">Allocation Records</div>
+          <div style="font-size:22px;font-weight:700;color:var(--accent-2);">${totalAllocations}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">Rows shown in the table below</div>
+        </div>
+        <div style="background:var(--bg-surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:8px;">Total Allocated Days</div>
+          <div style="font-size:22px;font-weight:700;color:var(--success);">${fmt(totalManDays)} md</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">Sum of all current allocations</div>
+        </div>
+        <div style="background:var(--bg-surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:8px;">Projects In Use</div>
+          <div style="font-size:22px;font-weight:700;color:var(--info);">${activeProjects}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">Projects referenced by allocations</div>
+        </div>
+      </div>
+      <div style="padding:0 18px 18px 18px;color:var(--text-muted);font-size:12px;">
+        This page shows allocation entries on the table below. The chart and the unique count above aggregate by person name so the same employee is only counted once.
+      </div>
+    </div>
+  `;
+
   const allEmpsByName = {};
   state.employees.forEach(e => {
     allEmpsByName[e.name] = (allEmpsByName[e.name] || 0) + e.manDays;
   });
 
   $('emp-container').innerHTML = `
+    ${summaryPanel}
     <div class="data-table-wrap">
       <table class="data-table">
         <thead>
@@ -3591,10 +3984,6 @@ function syncProjHours() {
   const d = parseFloat($('proj-days').value) || 0;
   $('proj-hours').value = (d * hpd()).toFixed(0);
 }
-function syncProjDays() {
-  const h = parseFloat($('proj-hours').value) || 0;
-  $('proj-days').value = (h / hpd()).toFixed(2);
-}
 
 function saveProject() {
   const id = $('proj-id').value;
@@ -3939,7 +4328,7 @@ async function exportExcel() {
   calculateAllocations();
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'LOE Pro';
+  wb.creator = 'Netcracker LOE APP';
   wb.created = new Date();
 
   // ── Colour palette — Professional Enterprise ─────────────────
@@ -3969,7 +4358,6 @@ async function exportExcel() {
   const thick = { style: 'medium', color: { argb: 'FF' + C.borderDark } };
 
   function fullBorder(t = thin) { return { top: t, left: t, bottom: t, right: t }; }
-  function outerBorder()        { return { top: thick, left: thick, bottom: thick, right: thick }; }
 
   // ── Helper: style a cell ────────────────────────────────────
   function styleCell(cell, opts = {}) {
@@ -4014,7 +4402,7 @@ async function exportExcel() {
   // ── Row 1: Title banner ──────────────────────────────────
   ws.mergeCells('A1:I1');
   const titleCell = ws.getCell('A1');
-  titleCell.value = '  LOE Pro — Level of Effort Report';
+  titleCell.value = '  Netcracker LOE APP — Level of Effort Report';
   styleCell(titleCell, {
     bgColor: C.brandDark, fontColor: C.white,
     bold: true, sz: 16,
@@ -4026,7 +4414,7 @@ async function exportExcel() {
   // ── Row 2: Generated date ────────────────────────────────
   ws.mergeCells('A2:I2');
   const genCell = ws.getCell('A2');
-  genCell.value = `  Generated: ${new Date().toLocaleString()}   |   Exported by LOE Pro`;
+  genCell.value = `  Generated: ${new Date().toLocaleString()}   |   Exported by Netcracker LOE APP`;
   styleCell(genCell, {
     bgColor: C.metaBg, fontColor: '475569',
     sz: 10, italic: true,
@@ -4237,7 +4625,7 @@ async function exportExcel() {
   // Banner
   ws2.mergeCells('A1:D1');
   const s1 = ws2.getCell('A1');
-  s1.value = '  LOE Pro — Summary Dashboard';
+  s1.value = '  Netcracker LOE APP — Summary Dashboard';
   styleCell(s1, { bgColor: C.brandDark, fontColor: C.white, bold: true, sz: 16, align: 'left', valign: 'middle', border: false });
   ws2.getRow(1).height = 36;
 
@@ -4325,7 +4713,7 @@ async function exportExcel() {
 
   ws3.mergeCells('A1:C1');
   const rp1 = ws3.getCell('A1');
-  rp1.value = '  LOE Pro — Resource Pool';
+  rp1.value = '  Netcracker LOE APP — Resource Pool';
   styleCell(rp1, { bgColor: C.brandDark, fontColor: C.white, bold: true, sz: 14, align: 'left', valign: 'middle', border: false });
   ws3.getRow(1).height = 32;
 
@@ -4599,7 +4987,7 @@ function downloadTemplate() {
   XLSX.utils.book_append_sheet(wb, wsPool, 'Resource Pool');
 
   const wsInstr = XLSX.utils.aoa_to_sheet([
-    ['LOE Pro — Import Template Instructions'],
+    ['Netcracker LOE APP — Import Template Instructions'],
     [],
     ['IMPORTANT: Do not change the header row names.'],
     ['Fill in data starting from row 2 in each sheet.'],
@@ -4725,7 +5113,7 @@ function exportTemplate() {
 
   // ── Instructions ──────────────────────────────────────────
   const wsInstr = XLSX.utils.aoa_to_sheet([
-    ['LOE Pro — Import Template Instructions'],
+    ['Netcracker LOE APP — Import Template Instructions'],
     [],
     ['IMPORTANT: Do not change the header row names.'],
     ['Fill in data starting from row 2 in each sheet.'],
